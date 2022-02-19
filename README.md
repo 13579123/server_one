@@ -5,6 +5,32 @@
 npm install server_one
 ```
 
+### 版本改动
+```text
+version 3.3.3 --> version 3.3.4 文档改动
+```
+
+### 目录信息
+```text
+server_one 
+----encryption
+    ----crypto.js # 加密的实现方式，由子线程调用
+    ----encryption.js # 加密解密类
+----jsonwebtoken
+    ----generate.js # 生成server_one_token的实现方式，由子线程调用
+    ----jsonwebtoken.js # server_one_jwt类
+    ----parse.js # 解析server_one_token的实现方式，由子线程调用
+----mysql
+    ----mysql.js # 数据库操作的简单封装，依赖于mysql包
+----thread
+    ----thread_pool.js # 线程池类和线程类，不推荐在不清楚源码的情况下去使用此类
+----algorithm.js # 一些算法的封装，暂时没有被使用
+----README.md # 说明文档
+----router.js # 核心类Router类
+----server_one.js # 核心类Server_one类
+    
+```
+
 ### Introduction
 这是我仿照express写的一个简单服务器框架，主要用作学习，还额外添加了一些我认为有用的东西。
 
@@ -144,7 +170,7 @@ app.err((err,req,resp,next) =>
 
 ```javascript
 // 创建一个线程池对象
-const thread_pool = new Server_one.Thread_pool("要执行的js脚本文件.js",12/*线程数量，默认12个，可选*/);
+const thread_pool = new Server_one.Thread_pool("要执行的js脚本文件.js",12/*线程数量，默认2个，可选*/);
 ```
 
 这样我们就拥有了一个线程池对象，接下来我们我们执行脚本文件，并且绑定事件。
@@ -298,3 +324,4 @@ const obj_cry = await Server_one.Encryption.encryption({name : "小江不会啊"
 const obj = await Server_one.Encryption.decryption(obj_cry); // 对上一个方法加密的数据进行解密
 ```
 
+bug或建议可以投向 ： 2242818464@qq.com 或者直接好友联系。
