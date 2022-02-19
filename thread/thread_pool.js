@@ -46,6 +46,7 @@ class Thread_pool
     /** on put back */
     __on_put_back (id)
     {
+        if (this.can_use_id.indexOf(id) !== -1) return;
         if (this.await_queue.length > 0)
             this.await_queue.splice(0,1)[0](this.thread_pool[id]);
         else

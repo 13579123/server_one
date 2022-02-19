@@ -71,13 +71,6 @@ class Algorithm
         return arr;
     }
 
-    /** @param arr : Array
-     * @param call : (item1,item2)=>boolean
-     * */
-    static sort (arr , call)
-    {
-        return Algorithm.hill_sort(arr,call);
-    }
 }
 
 module.exports = Algorithm;

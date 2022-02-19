@@ -25,6 +25,15 @@ class Jsonwebtoken
             let worker = await this.#generate_thread.getThread();
             worker.postMessage({key : "data" , data : data});
 
+            function errListen (err)
+            {
+                console.log(err + " : jsonwebtoken.js -- err : 30");
+                worker.off("message",generateListener);
+                worker.off("error",errListen);
+                worker.put_back();
+            }
+            worker.on("error",errListen);
+
             /** @type (value:any)=>void */
             function generateListener (value)
             {
@@ -42,18 +51,11 @@ class Jsonwebtoken
                 }
                 else if (value === "end")
                 {
-                    try
-                    {
-                        worker.postMessage("exit");
-                        worker.off("message",generateListener);
-                        res(lastV);
-                    }
-                    catch (err)
-                    {console.log(err)}
-                    finally
-                    {
-                        worker.put_back();
-                    }
+                    worker.postMessage("exit");
+                    worker.off("error",errListen);
+                    worker.off("message",generateListener);
+                    res(lastV);
+                    worker.put_back();
                 }
                 lastV = value;
             }
@@ -91,21 +93,23 @@ class Jsonwebtoken
 
             worker.postMessage({key : "begin" , data : {token , key , options}});
 
+            function errListen (err)
+            {
+                console.log(err + " : jsonwebtoken.js -- err : 30");
+                worker.off("message",parseListener);
+                worker.off("error",errListen);
+                worker.put_back();
+            }
+            worker.on("error",errListen);
+
             /** @type (value:any)=>void */
             function parseListener (value)
             {
-                try
-                {
-                    worker.off("message",parseListener);
-                    if (value instanceof Error) rej(value);
-                    else res(value);
-                }
-                catch (err)
-                {console.log(err)}
-                finally
-                {
-                    worker.put_back();
-                }
+                if (value instanceof Error) rej(value);
+                else res(value);
+                worker.off("message",parseListener);
+                worker.off("error",errListen);
+                worker.put_back();
             }
 
             worker.on("message",parseListener);

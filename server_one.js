@@ -5,6 +5,7 @@ const Router = require('./router');
 const Jsonwebtoken = require("./jsonwebtoken/jsonwebtoken");
 const Thread_pool = require("./thread/thread_pool");
 const Mysql = require("./mysql/mysql");
+const Encryption = require("./encryption/encryption");
 
 class Server_one extends Router
 {
@@ -175,6 +176,11 @@ Server_one.Thread_pool = Thread_pool;
  * @class Mysql
  * */
 Server_one.Mysql = Mysql;
+
+/** Encryption module
+ * @class Encryption
+ * */
+Server_one.Encryption = Encryption;
 
 Server_one.Response = class Response extends http.ServerResponse
 {

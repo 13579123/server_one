@@ -287,3 +287,14 @@ async function test ()
 
 
 这两个函数都会在第一次被调用时创建一个Server_one.Thread_pool对象，它们的解析与生成也是在其他线程进行的，所以不需要担心会阻塞主线程。
+
+## Server_one.Encryption类
+
+该类提供了部分多线程加密方法。
+
+```javascript
+const md5 = await Server_one.Encryption.md5("149847ababab"); // md5加密
+const obj_cry = await Server_one.Encryption.encryption({name : "小江不会啊"}); // 可逆的简单加密
+const obj = await Server_one.Encryption.decryption(obj_cry); // 对上一个方法加密的数据进行解密
+```
+
