@@ -1,5 +1,11 @@
 # server_one
 
+### install
+```shell
+npm install server_one
+```
+
+### Introduction
 这是我仿照express写的一个简单服务器框架，主要用作学习，还额外添加了一些我认为有用的东西。
 
 ### Server_one 类
