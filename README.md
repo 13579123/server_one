@@ -5,25 +5,36 @@
 npm install server_one
 ```
 
+
+
+### 支持Node版本
+
+```text
+v14.14.0 以上
+```
+
+
+
 ### 版本改动
+
 ```text
 version 3.3.3 --> version 3.3.4 文档改动
+version 3.3.4 --> version 3.3.5 thread_pool类被废弃，改用worker_pool类，并且Jsonwebtoken类和Encryption也被重写
 ```
 
 ### 目录信息
 ```text
 server_one 
 ----encryption
-    ----crypto.js # 加密的实现方式，由子线程调用
     ----encryption.js # 加密解密类
 ----jsonwebtoken
-    ----generate.js # 生成server_one_token的实现方式，由子线程调用
     ----jsonwebtoken.js # server_one_jwt类
-    ----parse.js # 解析server_one_token的实现方式，由子线程调用
 ----mysql
     ----mysql.js # 数据库操作的简单封装，依赖于mysql包
 ----thread
-    ----thread_pool.js # 线程池类和线程类，不推荐在不清楚源码的情况下去使用此类
+    ----thread_pool.js # 线程池类和线程类，不推荐在不清楚源码的情况下去使用此类 ## 于3.3.5版本废弃请使用worker_pool.js
+    ----worker_pool.js # 线程池的封装，操作更加简单，用户可以自行查看调用方式
+    ----worker_thread_file.js # 线程池实现逻辑
 ----algorithm.js # 一些算法的封装，暂时没有被使用
 ----README.md # 说明文档
 ----router.js # 核心类Router类
@@ -31,8 +42,17 @@ server_one
     
 ```
 
+
+
+
+
 ### Introduction
+
 这是我仿照express写的一个简单服务器框架，主要用作学习，还额外添加了一些我认为有用的东西。
+
+
+
+
 
 ### Server_one 类
 
@@ -160,7 +180,12 @@ app.err((err,req,resp,next) =>
 ```
 
 
-### Server_one.Thread_pool 类
+
+
+
+
+
+### Server_one.Thread_pool 类<已废弃，请使用Worker_Thread类>
 
 线程池类，可以通过Server_one.Thread_pool进行访问，由于node没有提供创建线程池类的方法，所以我这里手动实现了一下，它与Thread类（未暴露在框架之外）互相作用，通过事件通知的方式实现了"线程池"的功能。
 
@@ -200,6 +225,66 @@ thread_pool.then((thread) =>
 ```
 
 提醒一下，对于有内存缓存的多线程文件，需要手动释放内存，具体可以参考Server_one.Jsonwebtoken.generate函数的实现（基于Thread_pool实现的token创建函数）。
+
+
+
+
+
+## Server_one.Worker_pool类
+
+线程池类，用于创建一个线程池。
+
+```javascript
+// 线程数量
+const limit = 5;
+// 创建线程池对象
+const pool = new Server_one.Worker_pool(limit/*线程数量 ， 可以不选 ， 默认为2*/);
+```
+
+#### pool.get_thread(void) 函数
+
+该函数返回一个Promise<Worker_thread>。
+
+```javascript
+pool.get_thread()
+.then(async (worker) => 
+{
+    // 调用worker对象的execute方法开启多线程
+    /*
+    函数原型 : Worker_thread.prototype.execute( call:()=>any , [data : Object] , [lib : Array<string>]);
+    call 是线程要执行的函数
+    data 是执行时的上下文中的数据
+    lib 是执行时使用的库的路径数组
+    注意，execute中的回调函数是多线程执行的，所以在这里它无法访问到该作用域的数据，必须在data中声明。
+    这里调用第三方库或标准库时，必须在lib中表示
+    */
+    const count = 100;
+    const no_count = 200;
+    const data = await worker.execute(() => 
+    {
+        // 这里count可以修改与外界的count无关
+        count += 1;
+        // 由于我们在lib里面加入了fs和path所以这里也可以调用
+        const stream = fs.createStream(path.join(__dirname , "./test.json"));
+        console.log(count); // 101 正常输出
+        // console.log(no_count); // error : no_count is not definition 这里无法访问到外界的no_count数据
+        return {name : "test end"}; // 返回值会作为execute的放回值被返回
+    } , {count} , ["fs" , "path"]);
+    
+    console.log(data); // {name : "test end"}
+    // 之后线程会自动被放回线程池，等待下一次使用
+})
+```
+
+#### pool.destroy_pool(void)函数
+
+用于销毁当前线程池。
+
+
+
+
+
+
 
 ## Server.Mysql类
 
@@ -265,6 +350,12 @@ async function test ()
 }
 ```
 
+
+
+
+
+
+
 ### Server_one.Jsonwebtoken 类
 
 提供了静态方法用于token的生成和解析。
@@ -291,7 +382,7 @@ async function test ()
 
 第三个参数是 *配置对象*  可以不写,effective token的有效表示时间，默认永久 , coding 表示编码方式，可以不选，若设置了，则之后解码时也需要设置相同的编码。
 
-### Server_one.Jsonwebtoken.parse(token:string,key:string,[options:{coding:string}])
+#### Server_one.Jsonwebtoken.parse(token:string,key:string,[options:{coding:string}])
 
 该函数用于解析token :
 
@@ -314,6 +405,12 @@ async function test ()
 
 这两个函数都会在第一次被调用时创建一个Server_one.Thread_pool对象，它们的解析与生成也是在其他线程进行的，所以不需要担心会阻塞主线程。
 
+
+
+
+
+
+
 ## Server_one.Encryption类
 
 该类提供了部分多线程加密方法。
@@ -323,5 +420,13 @@ const md5 = await Server_one.Encryption.md5("149847ababab"); // md5加密
 const obj_cry = await Server_one.Encryption.encryption({name : "小江不会啊"}); // 可逆的简单加密
 const obj = await Server_one.Encryption.decryption(obj_cry); // 对上一个方法加密的数据进行解密
 ```
+
+
+
+
+
+
+
+### 联系方式
 
 bug或建议可以投向 ： 2242818464@qq.com 或者直接好友联系。

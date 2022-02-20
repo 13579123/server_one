@@ -22,9 +22,9 @@ class Mysql
         this.#pool = null;
         this.#connection = null;
         if (this.use_connection)
-            this.__connection = mysql.createConnection(this.#config);
+            this.#connection = mysql.createConnection(this.#config);
         else
-            this.__pool = mysql.createPool(this.#config);
+            this.#pool = mysql.createPool(this.#config);
     }
 
     /** get mysql connect
@@ -34,14 +34,14 @@ class Mysql
     {
         if (this.use_connection && !use_pool)
         {
-            if (!this.__connection) this.__connection = mysql.createConnection(this.#config);
-            this.__connection.connect();
-            return this.__connection;
+            if (!this.#connection) this.#connection = mysql.createConnection(this.#config);
+            this.#connection.connect();
+            return this.#connection;
         }
         let promise = new Promise((res,rej)=>
         {
-            if (!this.__pool) this.__pool = mysql.createPool(this.#config);
-            this.__pool.getConnection((err, connection)=>
+            if (!this.#pool) this.#pool = mysql.createPool(this.#config);
+            this.#pool.getConnection((err, connection)=>
             {
                 if (err) rej(err);
                 else res(connection);
@@ -114,15 +114,15 @@ class Transaction
     }
 
     /** rollback data */
-    rollback (option , call)
+    rollback (options , call)
     {
-        return this.connection.rollback(option , call);
+        return this.connection.rollback(options , call);
     }
 
     /** commit sql */
-    commit (option , call)
+    commit (options , call)
     {
-        return this.connection.commit(option , call);
+        return this.connection.commit(options , call);
     }
 
     /** free connection */

@@ -6,6 +6,7 @@ const Jsonwebtoken = require("./jsonwebtoken/jsonwebtoken");
 const Thread_pool = require("./thread/thread_pool");
 const Mysql = require("./mysql/mysql");
 const Encryption = require("./encryption/encryption");
+const Worker_pool = require("./thread/worker_pool");
 
 class Server_one extends Router
 {
@@ -167,11 +168,6 @@ Server_one.Router = Router;
  * */
 Server_one.Jsonwebtoken = Jsonwebtoken;
 
-/** Multithreading module
- * @class Thread_pool
- * */
-Server_one.Thread_pool = Thread_pool;
-
 /** Mysql module
  * @class Mysql
  * */
@@ -181,6 +177,18 @@ Server_one.Mysql = Mysql;
  * @class Encryption
  * */
 Server_one.Encryption = Encryption;
+
+/** Multithreading module use Worker_pool
+ * abandoned !!!
+ * @class Thread_pool
+ * @abandoned
+ * */
+Server_one.Thread_pool = Thread_pool;
+
+/**
+ * Multithreading module
+ * */
+Server_one.Worker_pool = Worker_pool;
 
 Server_one.Response = class Response extends http.ServerResponse
 {

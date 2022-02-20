@@ -1,5 +1,8 @@
 const worker_threads = require("worker_threads");
 
+/**
+ *  @abandoned
+ */
 class Thread_pool
 {
     pool_number;
