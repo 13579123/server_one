@@ -21,6 +21,7 @@ v14.14.0 以上
 version 3.3.3 --> version 3.3.4 文档改动
 version 3.3.4 --> version 3.3.5 thread_pool类被废弃，改用worker_pool类，并且Jsonwebtoken类和Encryption也被重写
 version 3.3.5 --> version 3.3.6 添加WebSocket类用于处理websocket连接
+version 3.3.6 --> version 3.3.7 websocket类的bug修复
 ```
 
 ### 目录信息

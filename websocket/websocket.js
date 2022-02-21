@@ -36,7 +36,8 @@ class Websocket
             await Websocket.execute_async(this[calls]['connect'][i] , socket);
         }
 
-        resp.socket.on("data" , async (buff) =>
+        const self = this;
+        async function messageListen (buff)
         {
             const parse_data = Websocket.parse(buff);
             if (parse_data.opcode === 8)
@@ -48,33 +49,41 @@ class Websocket
             socket.opcode = parse_data.opcode;
             socket.payloadData = parse_data.payloadData;
             /** data event commit  */
-            for (let i = 0; i < this[calls]['message'].length; i++)
+            for (let i = 0; i < self[calls]['message'].length; i++)
             {
-                await Websocket.execute_async(this[calls]['message'][i] , socket);
+                await Websocket.execute_async(self[calls]['message'][i] , socket);
             }
             return;
-        });
-        resp.socket.on("error" , async (err) =>
+        }
+        async function errorListen (err)
         {
             const socket = new Server_one_socket(resp.socket);
             socket.error = err;
             /** error event commit  */
-            for (let i = 0; i < this[calls]['message'].length; i++)
+            for (let i = 0; i < self[calls]['message'].length; i++)
             {
-                await Websocket.execute_async(this[calls]['error'][i] , socket);
+                await Websocket.execute_async(self[calls]['error'][i] , socket);
             }
             return;
-        });
-        resp.socket.on("close" , async () =>
+        }
+        async function closeListen (had_error)
         {
             const socket = new Server_one_socket(resp.socket);
             /** close event commit  */
-            for (let i = 0; i < this[calls]['close'].length; i++)
+            for (let i = 0; i < self[calls]['close'].length; i++)
             {
-                await Websocket.execute_async(this[calls]['close'][i] , socket);
+                await Websocket.execute_async(self[calls]['close'][i] , socket);
             }
+            /** free listen function */
+            resp.socket.off("data",messageListen);
+            resp.socket.off("error",errorListen);
+            resp.socket.off("close",closeListen);
             return;
-        });
+        }
+
+        resp.socket.on("data" , messageListen);
+        resp.socket.on("error" , errorListen);
+        resp.socket.on("close" , closeListen);
         return;
     }
 
