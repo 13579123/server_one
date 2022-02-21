@@ -27,6 +27,7 @@ class Encryption
      * */
     static async encryption (data)
     {
+        this.#init();
         data = JSON.stringify(data);
         const thread = await this.#thread_pool.get_thread();
         return await thread.execute(() =>
@@ -41,6 +42,7 @@ class Encryption
      * */
     static async decryption (data)
     {
+        this.#init();
         data = JSON.stringify(data);
         const thread = await this.#thread_pool.get_thread();
         const result = await thread.execute(() =>

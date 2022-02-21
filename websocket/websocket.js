@@ -23,7 +23,7 @@ class Websocket
     async __request (req,resp)
     {
         const key = req.headers['sec-websocket-key'];
-        const hash = crypto.createHash('sha1');  // 创建一个签名算法为sha1的哈希对象
+        const hash = crypto.createHash('sha1');  // create a algorithm of name is sha1 创建一个签名算法为sha1的哈希对象
         hash.update(`${key}${GUID}`)  // 将key和GUID连接后，更新到hash
         const result = hash.digest('base64') // 生成base64字符串
         const header = `HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-Websocket-Accept: ${result}\r\n\r\n` // 生成供前端校验用的请求头
@@ -77,6 +77,7 @@ class Websocket
             resp.socket.off("data",messageListen);
             resp.socket.off("error",errorListen);
             resp.socket.off("close",closeListen);
+            req = resp = null;
             return;
         }
 
