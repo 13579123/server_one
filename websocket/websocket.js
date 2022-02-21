@@ -1,6 +1,5 @@
 const http = require('http');
 const crypto = require('crypto')
-const a = 0;
 const calls = Symbol();
 
 /** web socket GUID */
