@@ -23,6 +23,7 @@ version 3.3.4 --> version 3.3.5 thread_pool类被废弃，改用worker_pool类�
 version 3.3.5 --> version 3.3.6 添加WebSocket类用于处理websocket连接
 version 3.3.6 --> version 3.3.7 websocket类的bug修复
 version 3.3.7 --> version 3.3.8 修复Encryption类的bug
+version 3.3.8 --> version 3.3.9 废弃Server_one.body_parse和Server_one.form_data中间件，全部改用Server_one.middleware.body_parse中间件，并且修复了一些bug，并且提供了Server_one.middleware来专门存放内置中间件
 ```
 
 ### 目录信息
@@ -32,6 +33,12 @@ server_one
     ----encryption.js # 加密解密类
 ----jsonwebtoken
     ----jsonwebtoken.js # server_one_jwt类
+----middleware
+	----body_parse
+		----form_data.js # 解析form_data类型的请求数据，由body_parse中间件调用
+		----body_parse.js # body_parse中间件，用于处理post请求的数据
+		----x_www_form_urlencoded.js # 解析post请求的数据，由body_parse中间件调用
+	----middleware.js # 框架内置中间件模块
 ----mysql
     ----mysql.js # 数据库操作的简单封装，依赖于mysql包
 ----thread
@@ -119,14 +126,19 @@ app.use((req,resp,next) =>
 
 这样我们就可以通过 http://localhost:9898/test 和 http://localhost:9898 来分别触发这几个函数了。
 
+#### 请求数据
+
 其中回调函数中的req是Server_one.Request的对象实例，它继承了http.IncomingMessage，所以可以通过它获取到请求的信息；并且Server_one内置了两个插件用于解析post请求的数据
 
 ```javascript
 /** 获取post请求参数 */
-app.use(Server_one.body_parse());
+// app.use(Server_one.body_parse()); // 废弃
 
 /** 处理formData数据 */
-app.use(Server_one.form_data());
+// app.use(Server_one.form_data()); // 废弃
+
+/* 处理post请求的数据，并将它挂载在req.body上 */
+app.use(Server_one.middleware.body_parse());
 
 // 这两个插件解析的数据都会放在req.body对象中 , get请求的数据会被自动解析到req.query对象中
 ```
@@ -138,7 +150,8 @@ app.use(Server_one.form_data());
 ```javascript
 app.use(Server_one.Router.ANY_PATH,Server_one.Router.ANY_METHOD,(req,resp,next)=>
 {
-    console.log("1");
+    console.log(req.body); // 查看post请求数据，前提是挂载了Server_one.middleware.body_parse中间件
+    console.log(req.query); // 查看get请求数据，无需挂载任何中间件，框架内部自动处理
     next();
 },(req,resp,next)=>
 {

@@ -52,6 +52,11 @@ class Jsonwebtoken
         else if (!key) throw new Error("key is not defined");
         this.#init();
         const thread = await this.#thread_pool.get_thread();
+        if (token instanceof Buffer)
+        {
+            token = token.toString();
+            key = key.toString();
+        }
         return await thread.execute(() =>
         {
             /** @type BufferEncoding */
@@ -61,7 +66,15 @@ class Jsonwebtoken
             if (foot.key !== key) throw new Error("key is error");
             if ((foot.effectiveTime !== -1) && (Date.now() - foot.createTime >= foot.effectiveTime))
                 throw new Error("expired token");
-            const data = JSON.parse(Buffer.from(tokens[1],coding).toString("utf-8"));
+            let data ;
+            try
+            {
+                data = JSON.parse(Buffer.from(tokens[1],coding).toString("utf-8"));
+            }
+            catch (err)
+            {
+                throw new Error("expired token");
+            }
             if (!data["key"] || data["key"] !== key) throw new Error("parse err , token is unlawful");
             delete data["key"];
             return data;

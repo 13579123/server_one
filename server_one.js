@@ -112,92 +112,11 @@ class Server_one extends Router
         req.query = result;
     }
 
-    /** post request execute */
-    static body_parse ()
-    {
-        function func(req,resp,next)
-        {
-            let chunk = [];
-            req.on('data' , (buf) =>
-            {
-                chunk.push(Buffer.from(buf));
-            });
-            req.on('end',() =>
-            {
-                req.post_buffer = Buffer.concat(chunk);
-                try
-                {
-                    req.body = JSON.parse(req.post_buffer.toString());
-                }
-                catch (err)
-                {
-                    req.body = {};
-                }
-                next();
-            });
-            return;
-        }
-        return func;
-    }
-
     /** parse form_data and set it to request.body*/
-    static form_data ()
-    {
-        /** parse form_data and set it to request.body
-         * @param req : Server_one.Request
-         * @param resp : Server_one.Response
-         * */
-        function func (req,resp,next)
-        {
-            if (!req.post_buffer)
-            {
-                next("form_data function must be called before body_parse function id called");
-                return;
-            }
-            else if (req.post_buffer.length <= 0)
-            {
-                next();
-                return;
-            }
-            /** get the request boundary value */
-            let strings = req.headers["content-type"].split("boundary=");
-            if (!strings[strings.length - 1])
-            {
-                next();
-                return;
-            }
-
-            let nextBuffer = '\r\n';
-            let boundary = "--" + strings[strings.length - 1] + nextBuffer, boundaryBuffer = Buffer.from(boundary);
-            let endBoundary = "--" + strings[strings.length - 1] + "--" + nextBuffer , endBoundaryBuffer = Buffer.from(endBoundary);
-            let nextDataBuffer = Buffer.from(nextBuffer + nextBuffer);
-            let newBuffer = req.post_buffer.slice(0,req.post_buffer.indexOf(endBoundaryBuffer) - 2);
-
-            let nameReg = /name="(.*?)"/;
-            while (true)
-            {
-                if (newBuffer.indexOf(boundaryBuffer) === -1) break;
-
-                let temporaryBuffer = newBuffer.slice(newBuffer.indexOf(boundaryBuffer) + boundaryBuffer.length);
-                newBuffer = temporaryBuffer;
-                let dataBuffer = temporaryBuffer.slice(0 , temporaryBuffer.indexOf(boundaryBuffer) - 2);
-
-                /** get proto name */
-                let protoBuffer = dataBuffer.slice(0,dataBuffer.indexOf(nextBuffer)).toString();
-                let protoName = nameReg.exec(protoBuffer)[1];
-
-                dataBuffer = dataBuffer.slice(dataBuffer.indexOf(nextDataBuffer) + nextDataBuffer.length)
-
-                /** set data */
-                req.body[protoName] = dataBuffer;
-                if (newBuffer.length === 0) break;
-            }
-            next();
-        }
-        return func;
-    }
-
 }
+
+/** post data parse */
+Server_one.middleware = require("./middleware/middleware");
 
 /** Router module
  * @class Router
