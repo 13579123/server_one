@@ -1,25 +1,55 @@
 "use strict";
 
 const http = require('http');
+const https = require('https');
 const Router = require('./router');
 const Jsonwebtoken = require("./jsonwebtoken/jsonwebtoken");
 const Thread_pool = require("./thread/thread_pool");
 const Mysql = require("./mysql/mysql");
 const Encryption = require("./encryption/encryption");
 const Worker_pool = require("./thread/worker_pool");
+const WebSocket = require("./websocket/websocket");
 
 class Server_one extends Router
 {
     /** @type http.Server */
     server;
+    /** @type WebSocket */
+    socket_server = null;
 
-    constructor()
+    /**
+     *  @param option : {{key : string , cert : string}}
+     * */
+    constructor(option)
     {
         super();
         const self = this;
-        /** @type http.Server server object */
-        self.server = http.createServer(async (req,resp) =>
+        let http_module;
+        if (option) http_module = https;
+        else http_module = http;
+        /** @type Server server object */
+        self.server = http_module.createServer(async (req,resp) =>
         {
+            /** deal websocket request */
+            if (req.headers['upgrade'] === 'websocket')
+            {
+                /** examine version */
+                if (req.headers['sec-websocket-version'] !== "13")
+                {
+                    resp.statusCode = 500;
+                    resp.end('connect version err');
+                    return;
+                }
+                if (!this.socket_server)
+                {
+                    resp.statusCode = 500;
+                    resp.end('websocket connection are not supported');
+                    return;
+                }
+                else await this.socket_server.__request(req,resp);
+                return;
+            }
+            /** ordinary http request */
             let requestUrl = req.url.split("?");
             let paths = requestUrl[0] && requestUrl[0].split('/');
             paths.shift();
@@ -32,6 +62,16 @@ class Server_one extends Router
             await this.execute_router(req,resp,paths);
             return;
         });
+    }
+
+    /** mount websocket module
+     * @param websocket : WebSocket
+     * */
+    websocket (websocket)
+    {
+        if (this.socket_server) throw new Error("the app has already mounted websocket");
+        this.socket_server = websocket;
+        return this;
     }
 
     /** init response object
@@ -50,6 +90,7 @@ class Server_one extends Router
     listen(port, call = function (){})
     {
         this.server.listen(port,call);
+        return this;
     }
 
     /** parse get request data
@@ -187,8 +228,15 @@ Server_one.Thread_pool = Thread_pool;
 
 /**
  * Multithreading module
+ * @class Worker_pool
  * */
 Server_one.Worker_pool = Worker_pool;
+
+/**
+ * Websocket module
+ * @class WebSocket
+ * */
+Server_one.WebSocket = WebSocket;
 
 Server_one.Response = class Response extends http.ServerResponse
 {

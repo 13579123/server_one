@@ -14,7 +14,7 @@ worker_thread.parentPort.on("message" , (worker) =>
             execute(worker);
             break;
         }
-        case "destroy" :destroy();
+        case "destroy" : destroy();
     }
 });
 

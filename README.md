@@ -20,6 +20,7 @@ v14.14.0 以上
 ```text
 version 3.3.3 --> version 3.3.4 文档改动
 version 3.3.4 --> version 3.3.5 thread_pool类被废弃，改用worker_pool类，并且Jsonwebtoken类和Encryption也被重写
+version 3.3.5 --> version 3.3.6 添加WebSocket类用于处理websocket连接
 ```
 
 ### 目录信息
@@ -32,9 +33,11 @@ server_one
 ----mysql
     ----mysql.js # 数据库操作的简单封装，依赖于mysql包
 ----thread
-    ----thread_pool.js # 线程池类和线程类，不推荐在不清楚源码的情况下去使用此类 ## 于3.3.5版本废弃请使用worker_pool.js
+    ----thread_pool.js # 线程池类和线程类，不推荐在不清楚源码的情况下去使用此类,于3.3.5版本废弃请使用worker_pool.js
     ----worker_pool.js # 线程池的封装，操作更加简单，用户可以自行查看调用方式
     ----worker_thread_file.js # 线程池实现逻辑
+----websocket
+	----websocket.js # websocket操作的简易封装
 ----algorithm.js # 一些算法的封装，暂时没有被使用
 ----README.md # 说明文档
 ----router.js # 核心类Router类
@@ -56,6 +59,12 @@ server_one
 
 ### Server_one 类
 
+#### 构造器
+
+new Server_one([option]) 当我们传入第一个参数时，启用https模块，需要ssl证书的信息。
+
+#### 基本操作
+
 这是框架的主类，所有的功能都是通过它暴露出来的。同时它也是Router类的子类，详情可以查看
 源代码：server_one/server_one.js  文件。它是整个框架实现web服务的起点，我们可以先创建一个它的对象。
 
@@ -75,6 +84,9 @@ app.listen(9898 , () =>
 这样，一个web服务就启动了。
 
 接下来是路由的添加，Router类提供了3种添加路由路由的方式，use , get , post , err ，而我们的Server_one类继承了Router所以可以直接使用这四个函数，其中use函数添加的路由会无视请求方法的不同，直接进行路由匹配，若符合条件则加入执行队列。
+
+对于https服务的创建，只需要在构造器中传入一个对象 {key : "xxx" , cert : "xxx"}
+那么Server_one就会创建https服务器了。
 
 ```javascript
 // 加入路由（路由前面不用带"/"）
@@ -358,7 +370,7 @@ async function test ()
 
 ### Server_one.Jsonwebtoken 类
 
-提供了静态方法用于token的生成和解析。
+提供了两个静态方法用于token的简单生成和解析。
 
 #### Server_one.Jsonwebtoken.generate(key : string, data : any , [options : {coding:string,effectiveTime:number}])
 
@@ -422,6 +434,85 @@ const obj = await Server_one.Encryption.decryption(obj_cry); // 对上一个方�
 ```
 
 
+
+
+
+## Server_one.Websocket类
+
+用于websocket连接的处理
+
+#### 操作演示
+
+```javascript
+const websocket = new Server_one.WebSocket(); // 创建一个websocket实例
+// 当客户端有消息发送过来时会调用message事件绑定的函数,socket是一个内部对象
+websocket.addEventListen("message" , (socket) => 
+{
+    // 客户端的数据会被放在 payloadData 中，不过它是Buffer的形式，可以使用toString函数转换成字符串
+    console.log(socket.payloadData.toString());
+    socket.write("你也好");
+});
+// 当客户端发送出错时会调用error事件绑定的函数,socket是一个内部对象
+websocket.addEventListen("error" , (socket) => 
+{
+    // 错误数据会被保存在socket.error中
+    console.error(socket.error);
+});
+// 当客户端连接成功时会调用connect事件绑定的函数,socket是一个内部对象
+websocket.addEventListen("connect" , (socket) => 
+{
+    console.log("connect");
+});
+// 当客户端连接断开时会调用close事件绑定的函数,socket是一个内部对象
+websocket.addEventListen("close" , (socket) => 
+{
+    console.log("close");
+});
+app.websocket(websocket); // 将该实例通过websocket函数挂载在app上 , 这样当有ws协议的请求进入时，会自动处理
+```
+
+在浏览器，我们可以 : 
+
+```javascript
+const socket = new WebSocket("ws://localhost:9898");
+
+    socket.onopen = function ()
+    {
+        console.log(1)
+        socket.send("你好");
+    }
+
+    socket.onmessage = function (v)
+    {
+        console.log(v)
+        socket.close();
+    }
+
+    socket.onclose = function ()
+    {
+        console.log('close')
+    }
+```
+
+
+
+目前websocket有 message ， error ， connect ，close 四个事件可以绑定监听函数。
+
+对于回调函数中的socket对象，实际上它是 Server_one_socket 类，但是在框架中并未暴露
+
+#### Server_one_socket 类
+
+它有四个属性和两个函数 : 
+
+```javascript
+socket; // 原始socket对象
+error; // 当发生错误时的错误对象 默认null
+payloadData; // 当获取到数据时的数据流对象
+opcode; // 操作类型码
+
+socket.write (buff); // write 函数 ， 可以将数据写回前端 ， 参数为 Buffer类型或 string类型
+socket.close () // 结束本次socket连接
+```
 
 
 

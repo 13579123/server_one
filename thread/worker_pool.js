@@ -129,10 +129,7 @@ class Worker_thread
             this.__execute_end(worker['data']);
             this.__execute_end = null;
         }
-        else if (worker["event"] === "error")
-        {
-            console.log(worker['data']);
-        }
+        else if (worker["event"] === "error") console.log(worker['data']);
         this.#worker_pool[put_symbol](this.#id);
         return void(0);
     }
