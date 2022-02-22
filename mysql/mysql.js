@@ -5,13 +5,15 @@ catch (err) {}
 
 class SQL_interface
 {
-    async query ();
+    /**
+     * normal execute sql
+     * @param sql : string
+     * */
+    async query (sql, data) {};
 }
 
 class Mysql extends SQL_interface
 {
-    /** @class SQL_interface */
-    static SQL_interface = SQL_interface;
     /** @type {{user:string,password:string,database:string,host:string,port:string}} connect config */
     #config;
     /** @type Pool mysql connect pool */
