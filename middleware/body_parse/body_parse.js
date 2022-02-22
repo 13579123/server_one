@@ -20,8 +20,7 @@ function body_parse ()
         req.on('end',() =>
         {
             req.post_buffer = Buffer.concat(chunk);
-            if (form_data_reg.test(req.headers['content-type']))
-                req.body = form_data(req,resp);
+            if (form_data_reg.test(req.headers['content-type'])) req.body = form_data(req,resp);
             /** Select the corresponding processing function 选择对应的处理函数 */
             else if (req.headers['content-type'] === 'application/x-www-form-urlencoded')
             {

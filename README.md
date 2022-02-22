@@ -24,6 +24,7 @@ version 3.3.5 --> version 3.3.6 添加WebSocket类用于处理websocket连接
 version 3.3.6 --> version 3.3.7 websocket类的bug修复
 version 3.3.7 --> version 3.3.8 修复Encryption类的bug
 version 3.3.8 --> version 3.3.9 废弃Server_one.body_parse和Server_one.form_data中间件，全部改用Server_one.middleware.body_parse中间件，并且修复了一些bug，并且提供了Server_one.middleware来专门存放内置中间件
+version 3.3.8 --> version 3.3.10 废弃Server_one.Thread_pool类 , Encryption类添加random_str静态方法用于获取随机指定长度的字符串
 ```
 
 ### 目录信息
@@ -42,7 +43,6 @@ server_one
 ----mysql
     ----mysql.js # 数据库操作的简单封装，依赖于mysql包
 ----thread
-    ----thread_pool.js # 线程池类和线程类，不推荐在不清楚源码的情况下去使用此类,于3.3.5版本废弃请使用worker_pool.js
     ----worker_pool.js # 线程池的封装，操作更加简单，用户可以自行查看调用方式
     ----worker_thread_file.js # 线程池实现逻辑
 ----websocket
@@ -207,51 +207,6 @@ app.err((err,req,resp,next) =>
 ```
 
 
-
-
-
-
-
-### Server_one.Thread_pool 类<已废弃，请使用Worker_Thread类>
-
-线程池类，可以通过Server_one.Thread_pool进行访问，由于node没有提供创建线程池类的方法，所以我这里手动实现了一下，它与Thread类（未暴露在框架之外）互相作用，通过事件通知的方式实现了"线程池"的功能。
-
-具体文件 : server_one/thread/thread_pool.js
-
-使用方式 : 
-
-```javascript
-// 创建一个线程池对象
-const thread_pool = new Server_one.Thread_pool("要执行的js脚本文件.js",12/*线程数量，默认2个，可选*/);
-```
-
-这样我们就拥有了一个线程池对象，接下来我们我们执行脚本文件，并且绑定事件。
-
-```javascript
-// thread_pool 会返回一个Promise<Thread>对象
-thread_pool.then((thread) => 
-{
-    function onExit () 
-    {
-        // ...
-    }
-    function onMessage (value)
-    {
-        // ...
-        thread.off("message",onMessage); // 记得释放监听函数 避免内存泄漏
-        thread.off("exit",onExit); // 记得释放监听函数 避免内存泄漏
-    }
-    thread.on("message" , onMessage);
-    thread.on("exit" , onExit);
-    thread.put_back(); // 放回线程池
-});
-
-/*
-该函数会在线程没有空闲时被放入等待队列，直到有空闲线程
-*/
-```
-
-提醒一下，对于有内存缓存的多线程文件，需要手动释放内存，具体可以参考Server_one.Jsonwebtoken.generate函数的实现（基于Thread_pool实现的token创建函数）。
 
 
 
@@ -446,6 +401,20 @@ async function test ()
 const md5 = await Server_one.Encryption.md5("149847ababab"); // md5加密
 const obj_cry = await Server_one.Encryption.encryption({name : "小江不会啊"}); // 可逆的简单加密
 const obj = await Server_one.Encryption.decryption(obj_cry); // 对上一个方法加密的数据进行解密
+
+
+// 获取指定长度的随机字符串，第一个参数是字符串的模式默认"any" ， 第二个参数则是字符串长度，默认6
+/*
+模式有 :
+"any" 大小写字母和数字
+"number" 仅数字
+"any_letter" 仅大小写字母
+"lower_letter" 仅小写字母
+"uppercase_letter" 仅大写字母
+"number_lower_letter" 数字和小写字母
+"number_uppercase_letter" 数字和大写字母
+*/
+const random_string = await  Server_one.Encryption.random_str("any" , 5);
 ```
 
 
@@ -535,4 +504,4 @@ socket.close () // 结束本次socket连接
 
 ### 联系方式
 
-bug或建议可以投向 ： 2242818464@qq.com 或者直接好友联系。
+无论是有bug或建议还是有技术缺陷可以 ： 2242818464@qq.com 或者直接好友联系 欢迎指正。

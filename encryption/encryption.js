@@ -52,6 +52,56 @@ class Encryption
         return JSON.parse(result + '');
     }
 
+    /**
+     * get a random string of specified length\
+     * @param model : "any"|"number"|"any_letter"|"uppercase_letter"|"lower_letter"|"number_lower_letter"|"number_uppercase_letter"
+     * @param len : number
+     * */
+    static async random_str (model = "any", len = 6)
+    {
+        this.#init();
+        const thread = await this.#thread_pool.get_thread();
+        /** @type string */
+        const result = await thread.execute(() =>
+        {
+            let result = "";
+            /** @type string */
+            let str;
+            switch (model)
+            {
+                case "any" :
+                    str = "zxcvbnmlkjhgfdsaqwertyuiopQWERTYUIOPASDFGHJKLZXCVBNM1234567890";
+                    break;
+                case "number" :
+                    str = "1234567890";
+                    break;
+                case "number_lower_letter" :
+                    str = "zxcvbnmlkjhgfdsaqwertyuiop1234567890";
+                    break;
+                case "any_letter" :
+                    str = "zxcvbnmlkjhgfdsaqwertyuiopQWERTYUIOPASDFGHJKLZXCVBNM";
+                    break;
+                case "uppercase_letter" :
+                    str = "QWERTYUIOPASDFGHJKLZXCVBNM";
+                    break;
+                case "lower_letter" :
+                    str = "zxcvbnmlkjhgfdsaqwertyuiop";
+                    break;
+                case "number_uppercase_letter" :
+                    str = "1234567890QWERTYUIOPASDFGHJKLZXCVBNM";
+                    break;
+                default :
+                    str = "zxcvbnmlkjhgfdsaqwertyuiopQWERTYUIOPASDFGHJKLZXCVBNM1234567890";
+            }
+            for (let i = 0; i < len; i++)
+            {
+                result += str[parseInt(Math.random() * str.length + '')];
+            }
+            return result;
+        } , {len , model} , []);
+        return result;
+    }
+
     static #init ()
     {
         if (Encryption.#thread_pool === null) this.#thread_pool = new Worker_pool(3);

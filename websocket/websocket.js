@@ -90,6 +90,7 @@ class Websocket
     /** add event listen
      * @param event : "message"|"close"|"error"|"connect"
      * @param call : (socket:Server_one_socket)=>void
+     * @return Websocket
      * */
     addEventListener (event , ...call)
     {
