@@ -3,8 +3,15 @@ let mysql = null;
 try {mysql = require("mysql")}
 catch (err) {}
 
-class Mysql
+class SQL_interface
 {
+    async query ();
+}
+
+class Mysql extends SQL_interface
+{
+    /** @class SQL_interface */
+    static SQL_interface = SQL_interface;
     /** @type {{user:string,password:string,database:string,host:string,port:string}} connect config */
     #config;
     /** @type Pool mysql connect pool */
@@ -16,6 +23,7 @@ class Mysql
     /** @param config {{user:string,password:string,database:string,host:string,port:string,use_connection:boolean}} connect config */
     constructor (config)
     {
+        super();
         if (mysql === null) throw new Error("not found mysql module you can try : npm install mysql .");
         this.use_connection = config.use_connection || false;
         this.#config = config;
@@ -87,11 +95,12 @@ class Mysql
 
 }
 
-class Transaction
+class Transaction extends SQL_interface
 {
     /** @param connection : PoolConnection|Connection */
     constructor(connection)
     {
+        super();
         /** @type PoolConnection|Connection */
         this.connection = connection;
     }

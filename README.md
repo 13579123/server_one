@@ -24,7 +24,8 @@ version 3.3.5 --> version 3.3.6 添加WebSocket类用于处理websocket连接
 version 3.3.6 --> version 3.3.7 websocket类的bug修复
 version 3.3.7 --> version 3.3.8 修复Encryption类的bug
 version 3.3.8 --> version 3.3.9 废弃Server_one.body_parse和Server_one.form_data中间件，全部改用Server_one.middleware.body_parse中间件，并且修复了一些bug，并且提供了Server_one.middleware来专门存放内置中间件
-version 3.3.8 --> version 3.3.10 废弃Server_one.Thread_pool类 , Encryption类添加random_str静态方法用于获取随机指定长度的字符串
+version 3.3.9 --> version 3.3.10 废弃Server_one.Thread_pool类 , Encryption类添加random_str静态方法用于获取随机指定长度的字符串
+version 3.3.9 --> version 3.3.11 些许改动
 ```
 
 ### 目录信息
