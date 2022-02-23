@@ -22,6 +22,16 @@ class Encryption
     }
 
     /**
+     * synchronize md5 encryption
+     * @param data : string */
+    static md5_synchronize (data)
+    {
+        const md5 = crypto.createHash("md5");
+        md5.update(data);
+        return md5.digest('hex');
+    }
+
+    /**
      * simple encryption the encryption can decryption
      * @param data : any
      * */
@@ -37,6 +47,16 @@ class Encryption
     }
 
     /**
+     * synchronize simple encryption the encryption can decryption
+     * @param data : any
+     * */
+    static encryption_synchronize (data)
+    {
+        data = JSON.stringify(data);
+        return Buffer.from(data,"utf-8").toString("base64");
+    }
+
+    /**
      * simple decryption
      * @param data : string
      * */
@@ -45,11 +65,21 @@ class Encryption
         this.#init();
         data = JSON.stringify(data);
         const thread = await this.#thread_pool.get_thread();
+        /** @type string */
         const result = await thread.execute(() =>
-        {
-            return Buffer.from(data,"base64").toString("utf-8");
-        } , {data});
-        return JSON.parse(result + '');
+                Buffer.from(data,"base64").toString("utf-8")
+        , {data});
+        return JSON.parse(result);
+    }
+
+    /**
+     * synchronize simple decryption
+     * @param data : string
+     * */
+    static decryption_synchronize (data)
+    {
+        const result = Buffer.from(data,"base64").toString("utf-8");
+        return JSON.parse(result);
     }
 
     /**
@@ -99,6 +129,49 @@ class Encryption
             }
             return result;
         } , {len , model} , []);
+        return result;
+    }
+
+    /**
+     * async get a random string of specified length\
+     * @param model : "any"|"number"|"any_letter"|"uppercase_letter"|"lower_letter"|"number_lower_letter"|"number_uppercase_letter"
+     * @param len : number
+     * */
+    static random_str_synchronize (model = "any", len = 6)
+    {
+        let result = "";
+        /** @type string */
+        let str;
+        switch (model)
+        {
+            case "any" :
+                str = "zxcvbnmlkjhgfdsaqwertyuiopQWERTYUIOPASDFGHJKLZXCVBNM1234567890";
+                break;
+            case "number" :
+                str = "1234567890";
+                break;
+            case "number_lower_letter" :
+                str = "zxcvbnmlkjhgfdsaqwertyuiop1234567890";
+                break;
+            case "any_letter" :
+                str = "zxcvbnmlkjhgfdsaqwertyuiopQWERTYUIOPASDFGHJKLZXCVBNM";
+                break;
+            case "uppercase_letter" :
+                str = "QWERTYUIOPASDFGHJKLZXCVBNM";
+                break;
+            case "lower_letter" :
+                str = "zxcvbnmlkjhgfdsaqwertyuiop";
+                break;
+            case "number_uppercase_letter" :
+                str = "1234567890QWERTYUIOPASDFGHJKLZXCVBNM";
+                break;
+            default :
+                str = "zxcvbnmlkjhgfdsaqwertyuiopQWERTYUIOPASDFGHJKLZXCVBNM1234567890";
+        }
+        for (let i = 0; i < len; i++)
+        {
+            result += str[parseInt(Math.random() * str.length + '')];
+        }
         return result;
     }
 

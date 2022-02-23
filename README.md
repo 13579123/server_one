@@ -26,6 +26,7 @@ version 3.3.7 --> version 3.3.8 修复Encryption类的bug
 version 3.3.8 --> version 3.3.9 废弃Server_one.body_parse和Server_one.form_data中间件，全部改用Server_one.middleware.body_parse中间件，并且修复了一些bug，并且提供了Server_one.middleware来专门存放内置中间件
 version 3.3.9 --> version 3.3.10 废弃Server_one.Thread_pool类 , Encryption类添加random_str静态方法用于获取随机指定长度的字符串
 version 3.3.9 --> version 3.3.11 些许改动
+version 3.3.12 --> version 3.3.13 为Encryption类的所有函数提供了静态的同步方法
 ```
 
 ### 目录信息
@@ -396,13 +397,15 @@ async function test ()
 
 ## Server_one.Encryption类
 
-该类提供了部分多线程加密方法。
+该类提供了部分多线程加密方法。以及同步加密解密的方法
 
 ```javascript
 const md5 = await Server_one.Encryption.md5("149847ababab"); // md5加密
+const md5_sync = Server_one.Encryption.md5_synchronize("149847ababab"); // 同步md5加密
 const obj_cry = await Server_one.Encryption.encryption({name : "小江不会啊"}); // 可逆的简单加密
+const obj_cry_sync = Server_one.Encryption.encryption_synchronize({name : "小江不会啊"}); // 同步可逆的简单加密
 const obj = await Server_one.Encryption.decryption(obj_cry); // 对上一个方法加密的数据进行解密
-
+const obj_sync = Server_one.Encryption.decryption_synchronize(obj_cry); // 同步对上一个方法加密的数据进行解密
 
 // 获取指定长度的随机字符串，第一个参数是字符串的模式默认"any" ， 第二个参数则是字符串长度，默认6
 /*
@@ -416,6 +419,7 @@ const obj = await Server_one.Encryption.decryption(obj_cry); // 对上一个方�
 "number_uppercase_letter" 数字和大写字母
 */
 const random_string = await  Server_one.Encryption.random_str("any" , 5);
+const random_string_sync = Server_one.Encryption.random_str_synchronize("any" , 5);
 ```
 
 

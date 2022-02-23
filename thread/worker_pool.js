@@ -103,11 +103,9 @@ class Worker_thread
      * */
     async execute (call , data, lib)
     {
-        lib = lib || [];
         const promise = new Promise((res,rej) =>
         {
             if (typeof call !== "function") throw new Error("call is not a function");
-            if (!Array.isArray(lib)) throw new Error("lib must be a Array")
             this.__execute_end = (value) => res(value);
             this.#worker.postMessage(
             {
@@ -115,7 +113,7 @@ class Worker_thread
                 function_str : call.toString(),
                 context_data : data || {},
                 func_name : call.name ,
-                lib : lib
+                lib : lib || []
             });
         });
         return promise;
