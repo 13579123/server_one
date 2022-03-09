@@ -20,6 +20,7 @@ function x_www_form_urlencoded (buffer)
     const key_values = data_str.split("&");
     for (let i = 0; i < key_values.length; i++)
     {
+        if (!key_values[i]) continue;
         let [key , value] = key_values[i].split("=");
         /** replace special char */
         for (let i = 0; i < special_array.length; i++) value = value.replace(special_array[i].reg , special_array[i].char);

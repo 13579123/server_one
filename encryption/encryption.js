@@ -5,6 +5,8 @@ class Encryption
 {
     /** @type Worker_pool */
     static #thread_pool = null;
+    /** @type boolean */
+    static complex = false;
 
     /**
      * md5 encryption
@@ -38,6 +40,16 @@ class Encryption
     static async encryption (data)
     {
         this.#init();
+        if (this.complex)
+        {
+            let send_data = {data , key : 'encryption'}
+            send_data = JSON.stringify(send_data);
+            const thread = await this.#thread_pool.get_thread();
+            return await thread.execute(() =>
+            {
+                return Buffer.from(send_data,"utf-8").toString("base64");
+            } , {send_data});
+        }
         data = JSON.stringify(data);
         const thread = await this.#thread_pool.get_thread();
         return await thread.execute(() =>
@@ -52,6 +64,12 @@ class Encryption
      * */
     static encryption_synchronize (data)
     {
+        if (this.complex)
+        {
+            let send_data = {data , key : 'encryption'}
+            send_data = JSON.stringify(send_data);
+            return Buffer.from(send_data,"utf-8").toString("base64");
+        }
         data = JSON.stringify(data);
         return Buffer.from(data,"utf-8").toString("base64");
     }
@@ -68,8 +86,9 @@ class Encryption
         /** @type string */
         const result = await thread.execute(() =>
                 Buffer.from(data,"base64").toString("utf-8")
-        , {data});
-        return JSON.parse(result);
+            , {data});
+        if (this.complex) return JSON.parse(result).data;
+        else return JSON.parse(result);
     }
 
     /**
@@ -79,7 +98,10 @@ class Encryption
     static decryption_synchronize (data)
     {
         const result = Buffer.from(data,"base64").toString("utf-8");
-        return JSON.parse(result);
+        if (this.complex)
+            return JSON.parse(result).data;
+        else
+            return JSON.parse(result);
     }
 
     /**

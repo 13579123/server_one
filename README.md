@@ -27,6 +27,7 @@ version 3.3.8 --> version 3.3.9 废弃Server_one.body_parse和Server_one.form_da
 version 3.3.9 --> version 3.3.10 废弃Server_one.Thread_pool类 , Encryption类添加random_str静态方法用于获取随机指定长度的字符串
 version 3.3.9 --> version 3.3.11 些许改动
 version 3.3.12 --> version 3.3.13 为Encryption类的所有函数提供了静态的同步方法
+version 3.3.13 --> version 3.3.14 修改了Encryption类的加密解密函数的实现
 ```
 
 ### 目录信息
@@ -400,6 +401,9 @@ async function test ()
 该类提供了部分多线程加密方法。以及同步加密解密的方法
 
 ```javascript
+// 该类提供了一个变量用于控制是否采用相对不可读的加密方式，默认关闭
+Server_one.Encryption.complex = true; // 开启该方式
+
 const md5 = await Server_one.Encryption.md5("149847ababab"); // md5加密
 const md5_sync = Server_one.Encryption.md5_synchronize("149847ababab"); // 同步md5加密
 const obj_cry = await Server_one.Encryption.encryption({name : "小江不会啊"}); // 可逆的简单加密
