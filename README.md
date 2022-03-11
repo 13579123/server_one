@@ -28,6 +28,7 @@ version 3.3.9 --> version 3.3.10 废弃Server_one.Thread_pool类 , Encryption类
 version 3.3.9 --> version 3.3.11 些许改动
 version 3.3.12 --> version 3.3.13 为Encryption类的所有函数提供了静态的同步方法
 version 3.3.13 --> version 3.3.14 修改了Encryption类的加密解密函数的实现
+version 3.3.14 --> version 3.3.15 修复了body_parse的一个小bug
 ```
 
 ### 目录信息

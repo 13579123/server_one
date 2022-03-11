@@ -3,7 +3,6 @@ const x_www_form_urlencoded = require("./x_www_form_urlencoded");
 
 function body_parse ()
 {
-    const form_data_reg = /^multipart\/form-data; boundary=(.*?)/igs;
 
     /** parse form_data and set it to request.body
      * @param req : Server_one.Request
@@ -20,7 +19,7 @@ function body_parse ()
         req.on('end',() =>
         {
             req.post_buffer = Buffer.concat(chunk);
-            if (form_data_reg.test(req.headers['content-type'])) req.body = form_data(req,resp);
+            if (/^multipart\/form-data; boundary=(.*?)/igs.test(req.headers['content-type'])) req.body = form_data(req,resp);
             /** Select the corresponding processing function 选择对应的处理函数 */
             else if (req.headers['content-type'] === 'application/x-www-form-urlencoded')
             {
