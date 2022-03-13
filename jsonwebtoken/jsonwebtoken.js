@@ -62,10 +62,22 @@ class Jsonwebtoken
             /** @type BufferEncoding */
             const coding = options.coding || "base64";
             const tokens = token.split(".");
+            if (tokens.length < 3)
+            {
+                __worker_handle__.postMessage({event : "error" , data : "expired token"})
+                return ;
+            };
             const foot = JSON.parse(Buffer.from(tokens[2],coding).toString("utf-8"));
-            if (foot.key !== key) throw new Error("key is error");
+            if (foot.key !== key)
+            {
+                __worker_handle__.postMessage({event : "error" , data : "key is error"});
+                return ;
+            }
             if ((foot.effectiveTime !== -1) && (Date.now() - foot.createTime >= foot.effectiveTime))
-                throw new Error("expired token");
+            {
+                __worker_handle__.postMessage({event : "error" , data : "expired token"});
+                return ;
+            }
             let data ;
             try
             {
@@ -73,7 +85,8 @@ class Jsonwebtoken
             }
             catch (err)
             {
-                throw new Error("expired token");
+                __worker_handle__.postMessage({event : "error" , data : "expired token"});
+                return ;
             }
             if (!data["key"] || data["key"] !== key) throw new Error("parse err , token is unlawful");
             delete data["key"];

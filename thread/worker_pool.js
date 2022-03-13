@@ -73,6 +73,7 @@ class Worker_thread
     #worker_pool;
     /** @type (Object)=>void */
     __execute_end;
+    __execute_err_end;
     /** thread id */
     #id;
     constructor(id , worker_pool)
@@ -107,14 +108,15 @@ class Worker_thread
         {
             if (typeof call !== "function") throw new Error("call is not a function");
             this.__execute_end = (value) => res(value);
+            this.__execute_err_end = (err) => rej(err);
             this.#worker.postMessage(
-            {
-                event : "execute",
-                function_str : call.toString(),
-                context_data : data || {},
-                func_name : call.name ,
-                lib : lib || []
-            });
+                {
+                    event : "execute",
+                    function_str : call.toString(),
+                    context_data : data || {},
+                    func_name : call.name ,
+                    lib : lib || []
+                });
         });
         return promise;
     }
@@ -127,9 +129,9 @@ class Worker_thread
             this.__execute_end(worker['data']);
             this.__execute_end = null;
         }
-        else if (worker["event"] === "error") console.log(worker['data']);
+        else if (worker["event"] === "error")
+            this.__execute_err_end(worker["data"]);
         this.#worker_pool[put_symbol](this.#id);
-        return void(0);
     }
 }
 

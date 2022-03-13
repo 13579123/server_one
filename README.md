@@ -29,6 +29,7 @@ version 3.3.9 --> version 3.3.11 些许改动
 version 3.3.12 --> version 3.3.13 为Encryption类的所有函数提供了静态的同步方法
 version 3.3.13 --> version 3.3.14 修改了Encryption类的加密解密函数的实现
 version 3.3.14 --> version 3.3.15 修复了body_parse的一个小bug
+version 3.3.15 --> version 3.3.16 修复了Jsonwebtoken类的一个小bug，给thread.execute函数添加了一个全局__worker_handle__变量，用于获取子线程对象
 ```
 
 ### 目录信息
@@ -248,6 +249,8 @@ pool.get_thread()
     const no_count = 200;
     const data = await worker.execute(() => 
     {
+        // 可以获取到子线程的对象
+        __worker_handle__.postMessage("");
         // 这里count可以修改与外界的count无关
         count += 1;
         // 由于我们在lib里面加入了fs和path所以这里也可以调用

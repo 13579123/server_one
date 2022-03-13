@@ -50,6 +50,7 @@ function execute (worker)
                 global[worker['lib'][i]] = require(worker['lib'][i]);
             }
         }
+        global["__worker_handle__"] = worker_thread.parentPort;
 
         const context = vm.createContext(global);
         const result = script.runInContext(context);
@@ -68,7 +69,7 @@ function execute (worker)
     {
         free_resource(data_keys , worker['lib']);
         worker_thread.parentPort.postMessage(
-        {event : "error" , data : err});
+            {event : "error" , data : err});
         return;
     }
 }
