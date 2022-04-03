@@ -30,6 +30,7 @@ version 3.3.12 --> version 3.3.13 为Encryption类的所有函数提供了静态
 version 3.3.13 --> version 3.3.14 修改了Encryption类的加密解密函数的实现
 version 3.3.14 --> version 3.3.15 修复了body_parse的一个小bug
 version 3.3.15 --> version 3.3.16 修复了Jsonwebtoken类的一个小bug，给thread.execute函数添加了一个全局__worker_handle__变量，用于获取子线程对象
+version version 3.3.16 --> 3.4.1 修改了Websocket的api
 ```
 
 ### 目录信息
@@ -442,29 +443,22 @@ const random_string_sync = Server_one.Encryption.random_str_synchronize("any" , 
 
 ```javascript
 const websocket = new Server_one.WebSocket(); // 创建一个websocket实例
-// 当客户端有消息发送过来时会调用message事件绑定的函数,socket是一个内部对象
-websocket.addEventListen("message" , (socket) => 
+
+// 连接成功的回调 ， 回调中会有一个socket对象
+websocket.connect((socket) =>
 {
-    // 客户端的数据会被放在 payloadData 中，不过它是Buffer的形式，可以使用toString函数转换成字符串
-    console.log(socket.payloadData.toString());
-    socket.write("你也好");
+    // 接受消息的回调，它是一个Buffer对象
+    socket.on_message((v) =>
+    {
+        console.log(v.toString());
+    });
+    // 连接结束的回调
+    socket.on_close(() =>
+    {
+        console.log("close");
+    })
 });
-// 当客户端发送出错时会调用error事件绑定的函数,socket是一个内部对象
-websocket.addEventListen("error" , (socket) => 
-{
-    // 错误数据会被保存在socket.error中
-    console.error(socket.error);
-});
-// 当客户端连接成功时会调用connect事件绑定的函数,socket是一个内部对象
-websocket.addEventListen("connect" , (socket) => 
-{
-    console.log("connect");
-});
-// 当客户端连接断开时会调用close事件绑定的函数,socket是一个内部对象
-websocket.addEventListen("close" , (socket) => 
-{
-    console.log("close");
-});
+
 app.websocket(websocket); // 将该实例通过websocket函数挂载在app上 , 这样当有ws协议的请求进入时，会自动处理
 ```
 

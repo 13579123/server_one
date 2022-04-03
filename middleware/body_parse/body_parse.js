@@ -26,7 +26,11 @@ function body_parse ()
                 try {req.body = JSON.parse(req.post_buffer.toString());}
                 catch (err) {req.body = x_www_form_urlencoded(req.post_buffer);}
             }
-            else req.body = {};
+            else
+            {
+                try {req.body = JSON.parse(req.post_buffer.toString());}
+                catch (err) {req.body = {}}
+            };
             next();
         });
         return;

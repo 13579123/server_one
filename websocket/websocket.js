@@ -5,14 +5,23 @@ const calls = Symbol();
 /** web socket GUID */
 const GUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
 
+async function execute_async (call , data)
+{
+    const promise = new Promise((res,rej) =>
+    {
+        const call_result = call(data);
+        if (call_result instanceof Promise)
+            call_result.then((value) => res(value));
+        else res(call_result);
+    });
+    return promise;
+}
+
 class Websocket
 {
     constructor()
     {
         this[calls] = {};
-        this[calls]['message'] = [];
-        this[calls]['close'] = [];
-        this[calls]['error'] = [];
         this[calls]['connect'] = [];
     }
 
@@ -31,71 +40,18 @@ class Websocket
         /** connect event commit  */
         const socket = new Server_one_socket(resp.socket);
         for (let i = 0; i < this[calls]['connect'].length; i++)
-        {
-            await Websocket.execute_async(this[calls]['connect'][i] , socket);
-        }
-
-        const self = this;
-        async function messageListen (buff)
-        {
-            const parse_data = Websocket.parse(buff);
-            if (parse_data.opcode === 8)
-            {
-                resp.socket.end();
-                return;
-            }
-            const socket = new Server_one_socket(resp.socket);
-            socket.opcode = parse_data.opcode;
-            socket.payloadData = parse_data.payloadData;
-            /** data event commit  */
-            for (let i = 0; i < self[calls]['message'].length; i++)
-            {
-                await Websocket.execute_async(self[calls]['message'][i] , socket);
-            }
-            return;
-        }
-        async function errorListen (err)
-        {
-            const socket = new Server_one_socket(resp.socket);
-            socket.error = err;
-            /** error event commit  */
-            for (let i = 0; i < self[calls]['message'].length; i++)
-            {
-                await Websocket.execute_async(self[calls]['error'][i] , socket);
-            }
-            return;
-        }
-        async function closeListen (had_error)
-        {
-            const socket = new Server_one_socket(resp.socket);
-            /** close event commit  */
-            for (let i = 0; i < self[calls]['close'].length; i++)
-            {
-                await Websocket.execute_async(self[calls]['close'][i] , socket);
-            }
-            /** free listen function */
-            resp.socket.off("data",messageListen);
-            resp.socket.off("error",errorListen);
-            resp.socket.off("close",closeListen);
-            req = resp = null;
-            return;
-        }
-
-        resp.socket.on("data" , messageListen);
-        resp.socket.on("error" , errorListen);
-        resp.socket.on("close" , closeListen);
+            await execute_async(this[calls]['connect'][i] , socket);
         return;
     }
 
-    /** add event listen
-     * @param event : "message"|"close"|"error"|"connect"
+    /** on connect
      * @param call : (socket:Server_one_socket)=>void
      * @return Websocket
      * */
-    addEventListener (event , ...call)
+    connect (...call)
     {
-        if (!this[calls][event]) throw new Error("invalid event");
-        else this[calls][event].push(...call);
+        if (!this[calls]["connect"]) throw new Error("invalid event");
+        else this[calls]["connect"].push(...call);
         return this;
     }
 
@@ -183,16 +139,6 @@ class Websocket
         return frame;
     }
 
-    static async execute_async (call , socket)
-    {
-        const promise = new Promise((res,rej) =>
-        {
-            const call_result = call(socket);
-            if (call_result instanceof Promise) call_result.then((value) => res(value));
-            else res(call_result);
-        });
-        return promise;
-    }
 }
 
 class Server_one_socket
@@ -202,12 +148,34 @@ class Server_one_socket
      * @type null|Buffer */
     payloadData;
 
+    /** @param socket : http.Socket */
     constructor(socket)
     {
         this.socket = socket;
         this.error = null;
         this.payloadData = null;
         this.opcode = null;
+        this["event_pool"] = {};
+        this["event_pool"]["message"] = [];
+        this["event_pool"]["close"] = [];
+
+        socket.on("data" , (buf) =>
+        {
+            const data = Websocket.parse(buf);
+            if (data.opcode === 8)
+            {
+                socket.end();
+                return;
+            }
+            for (let i = 0; i < this["event_pool"]["message"].length; i++)
+                this["event_pool"]["message"][i](data.payloadData);
+        });
+
+        socket.on("close" , () =>
+        {
+            for (let i = 0; i < this["event_pool"]["close"].length; i++)
+                this["event_pool"]["close"][i]();
+        });
     }
 
     /**
@@ -222,6 +190,21 @@ class Server_one_socket
     close ()
     {
         this.socket.end();
+    }
+
+    /** bind event
+     * @param call : (data:string|Buffer)=>void
+     * */
+    on_message (...call)
+    {
+        this.event_pool["message"].push(...call);
+    }
+    /** bind event
+     * @param call : ()=>void
+     * */
+    on_close (...call)
+    {
+        this.event_pool["close"].push(...call);
     }
 }
 
