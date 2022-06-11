@@ -7,7 +7,8 @@ const special_array = [
     {reg : /%24/igs, char : "$"},
     {reg : /%3F/igs, char : "?"},
     {reg: /%3D/igs , char : "="},
-    {reg: /%2F/igs , char : '/'}
+    {reg: /%2F/igs , char : '/'},
+    {reg: /%3A/igs , char : ':'}
 ];
 
 /**

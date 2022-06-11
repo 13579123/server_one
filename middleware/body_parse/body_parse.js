@@ -22,10 +22,7 @@ function body_parse ()
             if (/^multipart\/form-data; boundary=(.*?)/igs.test(req.headers['content-type'])) req.body = form_data(req,resp);
             /** Select the corresponding processing function 选择对应的处理函数 */
             else if (req.headers['content-type'] === 'application/x-www-form-urlencoded')
-            {
-                try {req.body = JSON.parse(req.post_buffer.toString());}
-                catch (err) {req.body = x_www_form_urlencoded(req.post_buffer);}
-            }
+                req.body = x_www_form_urlencoded(req.post_buffer);
             else
             {
                 try {req.body = JSON.parse(req.post_buffer.toString());}

@@ -30,7 +30,8 @@ version 3.3.12 --> version 3.3.13 为Encryption类的所有函数提供了静态
 version 3.3.13 --> version 3.3.14 修改了Encryption类的加密解密函数的实现
 version 3.3.14 --> version 3.3.15 修复了body_parse的一个小bug
 version 3.3.15 --> version 3.3.16 修复了Jsonwebtoken类的一个小bug，给thread.execute函数添加了一个全局__worker_handle__变量，用于获取子线程对象
-version version 3.3.16 --> 3.4.1 修改了Websocket的api
+version 3.3.16 --> version 3.4.1 修改了Websocket的api
+version 3.4.1 --> version 3.4.2 部分修改
 ```
 
 ### 目录信息

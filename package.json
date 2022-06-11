@@ -1,6 +1,6 @@
 {
   "name": "server_one",
-  "version": "3.4.16",
+  "version": "3.4.2",
   "description": "A lightweight frame of the NodeJS",
   "main": "server_one.js",
   "scripts": {

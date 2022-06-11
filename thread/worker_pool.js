@@ -35,10 +35,10 @@ class Worker_pool
      * @returns Promise<Worker_thread>  */
     async get_thread ()
     {
+        /** 若连接池中有空闲的连接 */
         if (this.#idle_thread_id.length > 0)
-        {
             return this.#pool[this.#idle_thread_id.splice(0,1)[0]];
-        }
+        /** 等待空闲连接 */
         const promise = new Promise((res,rej) =>
         {
             this.#await_queue.push((thread) => res(thread));
